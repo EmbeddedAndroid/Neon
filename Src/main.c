@@ -56,6 +56,8 @@ static GPIO_InitTypeDef  GPIO_InitStruct;
 UART_HandleTypeDef UartHandle;
 I2C_HandleTypeDef I2cxHandle, I2cyHandle;
 
+//#define DEBUG 1
+
 #define I2C_LED_ADDRESS 0x60
 #define I2C_TEMP_ADDRESS 0x70
 
@@ -81,6 +83,7 @@ static void write_I2C_register(I2C_HandleTypeDef *h, uint16_t addr_bus, uint8_t 
     HAL_I2C_Master_Transmit(h, addr_bus, data, 3, 100);  // data is the start pointer of our array
 }
 
+#if DEBUG
 static void i2cdetect(I2C_HandleTypeDef *h, const char *s, int addr_min, int addr_max)
 {
   int a;
@@ -112,6 +115,7 @@ static void i2cdetect(I2C_HandleTypeDef *h, const char *s, int addr_min, int add
   }
   printf("\r\n");
 }
+#endif
 
 /**
   * @brief  Main program
@@ -212,11 +216,12 @@ int main(void)
   /* stdin unbuffered otherwise will hang trying to fill the input buffer */
   setvbuf(stdin, NULL, _IONBF, 0);
 
+#if DEBUG
   printf("Hello world !\r\n");
 
   i2cdetect(&I2cxHandle, "I2C2", 0, 127);
   i2cdetect(&I2cyHandle, "I2C3", 0, 127);
-
+#endif
 
   write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x02, 0x09F); // Set PSC0 to achieve DIM0 of 1 s
   HAL_Delay(100);
@@ -360,9 +365,12 @@ int main(void)
     ret = HAL_I2C_Mem_Read(&I2cxHandle, 2 * I2C_TEMP_ADDRESS, 0x7ca2, I2C_MEMADD_SIZE_16BIT, buf, 6, 1000);
 
     // HAL_I2C_Mem_Write(&I2cxHandle, I2C_TEMP_ADDRESS, 0x00, I2C_MEMADD_SIZE_8BIT, (uint8_t*)buf, 2, 100);
+#if DEBUG
     printf("\n%d %02x %02x %02x %02x %02x %02x\n", (int)ret, buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
     printf("%%RH = %.2f%%\n", (100.0 * (buf[3] * 256 + buf[4])) / 65536.0);
     //printf("T = %.2f C\n", ((175.0 * (buf[0] * 256 + buf[1])) / 65536.0) - 45.0);
+#endif
+
     value = (((int)buf[0]) << 8) + buf[1];
     /* Convert the value to millidegrees Celsius */
     temperature = ((value*21875)>>13)-45000;
