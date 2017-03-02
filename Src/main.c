@@ -260,14 +260,6 @@ int main(void)
     HAL_Delay(LED_SLEEP_DELAY);
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
 
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_12);
-    HAL_Delay(LED_SLEEP_DELAY);
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_12);
-
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15);
-    HAL_Delay(LED_SLEEP_DELAY);
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15);
-
   /* -4 flashing I2C bus circular LEDs + RGB LED
 
   When used only as GPIO expander registers 0x00 to 0x01
