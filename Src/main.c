@@ -58,6 +58,8 @@ I2C_HandleTypeDef I2cxHandle, I2cyHandle;
 
 //#define DEBUG 1
 
+#define LED_SLEEP_DELAY 100
+
 #define I2C_LED_ADDRESS 0x60
 #define I2C_TEMP_ADDRESS 0x70
 
@@ -237,27 +239,27 @@ int main(void)
   while (1)
   {
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
-    HAL_Delay(300);
+    HAL_Delay(LED_SLEEP_DELAY);
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
 
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15);
-    HAL_Delay(200);
+    HAL_Delay(LED_SLEEP_DELAY);
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15);
 
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_12);
-    HAL_Delay(200);
+    HAL_Delay(LED_SLEEP_DELAY);
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_12);
 
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
-    HAL_Delay(300);
+    HAL_Delay(LED_SLEEP_DELAY);
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
 
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_12);
-    HAL_Delay(200);
+    HAL_Delay(LED_SLEEP_DELAY);
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_12);
 
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15);
-    HAL_Delay(200);
+    HAL_Delay(LED_SLEEP_DELAY);
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15);
 
   /* -4 flashing I2C bus circular LEDs + RGB LED
@@ -271,85 +273,85 @@ int main(void)
   */
 
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x06, 0x03); // LED 0
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x06, 0x0C); // LED 1
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x06, 0x30); // LED 2
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x06, 0xC0); // LED 3
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x06, 0x00); // LED 1 - 3 OFF
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
 
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x07, 0x03); // LED 4
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x07, 0x0C); // LED 5
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x07, 0x30); // LED 6
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x07, 0xC0); // LED 7
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x07, 0x00); // LED 4 - 7 OFF
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
 
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x08, 0x03); // LED 8
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x08, 0x0C); // LED 9
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x08, 0x30); // LED 10
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x08, 0xC0); // LED 11
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x09, 0x03); // LED 12
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x08, 0x00); // LED 8 - 11 OFF
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x09, 0x00); // LED 12 OFF
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
 
     // incremental
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x06, 0x03); // LED 0
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x06, 0x0F); // LED 1
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x06, 0x3F); // LED 2
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x06, 0xFF); // LED 3
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
 
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x07, 0x03); // LED 4
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x07, 0x0F); // LED 5
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x07, 0x3F); // LED 6
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x07, 0xFF); // LED 7
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
 
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x08, 0x03); // LED 8
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x08, 0x0F); // LED 9
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x08, 0x3F); // LED 10
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x08, 0xFF); // LED 11
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x09, 0x03); // LED 12
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
 
     // All LEDs off
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x06, 0x00); // LED 1 - 3 OFF
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x07, 0x00); // LED 4 - 7 OFF
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x08, 0x00); // LED 8 - 11 OFF
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x09, 0x00); // LED 12 OFF
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
 
     // RGB LEDs
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x09, 0x0C); // LED 15 ON
-    HAL_Delay(100);
+    HAL_Delay(LED_SLEEP_DELAY);
 
 
     if (HAL_I2C_GetError(&I2cyHandle) == HAL_I2C_ERROR_AF) {
