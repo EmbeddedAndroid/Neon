@@ -235,6 +235,12 @@ int main(void)
   HAL_Delay(100);
   //write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x09, 0x03); // Set LEDs 13, 14 and 15 off by loading the data into LS3 register
 
+  /* Init/Reset Si7034 */
+  uint8_t si_buf[6]; /* 6 is the max read bytes */
+  /* Command: measure temperature and relative humidity, normal hold mode */
+  si_buf[0] = 0xFE;
+  HAL_I2C_Master_Transmit(&I2cxHandle, 2 * I2C_TEMP_ADDRESS, si_buf, 1, 100);
+
   /*##-3- Toggle PB12~15 IO in an infinite loop #################################*/
   while (1)
   {
@@ -353,33 +359,35 @@ int main(void)
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x09, 0x0C); // LED 15 ON
     HAL_Delay(LED_SLEEP_DELAY);
 
-
     if (HAL_I2C_GetError(&I2cyHandle) == HAL_I2C_ERROR_AF) {
       printf("Error in i2cwrite\n");
     }
 
-    /* -5 Read and return TEMP sensor */
-    int value = 0;
-    int temperature = 0;
-    uint8_t buf[6];
+    /* Read and report temperature and humidity data */
+    int si_temp = 0, si_humidity = 0;
+    int temp = 0, humidity = 0;
+    uint8_t si_buf[6]; /* 6 is the max read bytes */
+    /* Command: measure temperature and relative humidity, normal hold mode */
+    si_buf[0] = 0x7C;
+    si_buf[1] = 0xA2;
 
-    HAL_StatusTypeDef ret;
-    ret = HAL_I2C_Mem_Read(&I2cxHandle, 2 * I2C_TEMP_ADDRESS, 0x7ca2, I2C_MEMADD_SIZE_16BIT, buf, 6, 1000);
+    HAL_I2C_Master_Transmit(&I2cxHandle, 2 * I2C_TEMP_ADDRESS, si_buf, 2, 100);
+    HAL_I2C_Master_Receive(&I2cxHandle, 2 * I2C_TEMP_ADDRESS, si_buf, 6, 100);
 
-    // HAL_I2C_Mem_Write(&I2cxHandle, I2C_TEMP_ADDRESS, 0x00, I2C_MEMADD_SIZE_8BIT, (uint8_t*)buf, 2, 100);
-#if DEBUG
-    printf("\n%d %02x %02x %02x %02x %02x %02x\n", (int)ret, buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
-    printf("%%RH = %.2f%%\n", (100.0 * (buf[3] * 256 + buf[4])) / 65536.0);
-    //printf("T = %.2f C\n", ((175.0 * (buf[0] * 256 + buf[1])) / 65536.0) - 45.0);
-#endif
+    si_temp = (((int) si_buf[0]) << 8) + si_buf[1];
+    si_humidity = (((int) si_buf[3]) << 8) + si_buf[4];
+    /* Convert temperature to celsius */
+    temp = (((si_temp * 21875) >> 13) - 45000) / 1000;
+    /* Convert the value to percent relative humidity */
+    humidity = ((si_humidity * 12500) >> 13) / 1000;
+    if (humidity < 0) {
+      humidity = 0;
+    } else if (humidity > 100) {
+      humidity = 100;
+    }
 
-    value = (((int)buf[0]) << 8) + buf[1];
-    /* Convert the value to millidegrees Celsius */
-    temperature = ((value*21875)>>13)-45000;
-    //printf("temperature read return is %02x:%02x \r\n", buf[0] & 0xff, buf[1] & 0xff);
-    printf("T is %d mC \r\n", temperature);
+    printf("Si7034: T %d H %d\r\n", temp, humidity);
   }
-
 }
 
 
