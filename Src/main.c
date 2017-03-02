@@ -322,7 +322,7 @@ int main(void)
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x08, 0x00); // LED 11
 
     if (HAL_I2C_GetError(&I2cyHandle) == HAL_I2C_ERROR_AF) {
-      printf("Error in i2cwrite\n");
+      printf("ERROR: LP3944 I2C WRITE FAILURE\r\n");
     }
 
     /* Read and report temperature and humidity data */
