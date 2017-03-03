@@ -298,10 +298,6 @@ int main(void)
   /*##-3- Toggle PB12~15 IO in an infinite loop #################################*/
   while (1)
   {
-    pin_state = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9);
-    if (pin_state == 0)
-      NVIC_SystemReset();
-
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
     HAL_Delay(LED_SLEEP_DELAY);
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
@@ -413,6 +409,11 @@ int main(void)
     } else if (humidity >= 100) {
       humidity = 99;
     }
+
+    /* Before reporting, make sure it is wanted by the host */
+    pin_state = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9);
+    if (pin_state == 0)
+      NVIC_SystemReset();
 
     printf("SHUB: T % .3d H %.2d\r\n", temp, humidity);
   }
