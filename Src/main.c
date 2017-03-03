@@ -169,13 +169,13 @@ int main(void)
   I2cxHandle.Instance             = I2Cx;
 
   I2cxHandle.Init.AddressingMode  = I2C_ADDRESSINGMODE_7BIT;
-  I2cxHandle.Init.ClockSpeed      = 400000;
+  I2cxHandle.Init.ClockSpeed      = 100000;
   I2cxHandle.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
   I2cxHandle.Init.DutyCycle       = I2C_DUTYCYCLE_16_9;
   I2cxHandle.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
   I2cxHandle.Init.NoStretchMode   = I2C_NOSTRETCH_DISABLE;
-  I2cxHandle.Init.OwnAddress1     = 0x3F;
-  I2cxHandle.Init.OwnAddress2     = 0x3E;
+  I2cxHandle.Init.OwnAddress1     = 0x00;
+  I2cxHandle.Init.OwnAddress2     = 0x00;
 
   if(HAL_I2C_Init(&I2cxHandle) != HAL_OK)
   {
@@ -186,13 +186,13 @@ int main(void)
   I2cyHandle.Instance             = I2Cy;
 
   I2cyHandle.Init.AddressingMode  = I2C_ADDRESSINGMODE_7BIT;
-  I2cyHandle.Init.ClockSpeed      = 400000;
+  I2cyHandle.Init.ClockSpeed      = 100000;
   I2cyHandle.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
   I2cyHandle.Init.DutyCycle       = I2C_DUTYCYCLE_16_9;
   I2cyHandle.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
   I2cyHandle.Init.NoStretchMode   = I2C_NOSTRETCH_DISABLE;
-  I2cyHandle.Init.OwnAddress1     = 0x3F;
-  I2cyHandle.Init.OwnAddress2     = 0x3E;
+  I2cyHandle.Init.OwnAddress1     = 0x00;
+  I2cyHandle.Init.OwnAddress2     = 0x00;
 
   if(HAL_I2C_Init(&I2cyHandle) != HAL_OK)
   {
@@ -216,8 +216,8 @@ int main(void)
   GPIO_InitStruct.Pin = GPIO_PIN_15;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /* stdin unbuffered otherwise will hang trying to fill the input buffer */
-  setvbuf(stdin, NULL, _IONBF, 0);
+  /* Initial delay, on purpose  */
+  HAL_Delay(1000);
 
 #if DEBUG
   printf("Hello world !\r\n");
@@ -229,11 +229,37 @@ int main(void)
   write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x03, 0xFF); // Set PWM0 duty cycle to 100%
   write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x05, 0xFF); // Set PWM1 duty cycle to 100%
 
+  uint8_t ret = 0;
+
   /* Init/Reset Si7034 */
   uint8_t si_buf[6]; /* 6 is the max read bytes */
   /* Command: measure temperature and relative humidity, normal hold mode */
   si_buf[0] = 0xFE;
-  HAL_I2C_Master_Transmit(&I2cxHandle, 2 * I2C_TEMP_ADDRESS, si_buf, 1, 100);
+  if ((ret = HAL_I2C_Master_Transmit(&I2cxHandle, 2 * I2C_TEMP_ADDRESS, si_buf, 1, 100)))
+    printf("Si7034: I2C HAL ERROR RESET: %d\r\n", ret);
+
+  HAL_Delay(100);
+
+  if ((ret = HAL_I2C_IsDeviceReady(&I2cxHandle, 2 * I2C_TEMP_ADDRESS, 3, 100))) {
+    printf("Si7034: Device not ready, aborting! - Error: %d\r\n", ret);
+    write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x09, 0x0C); // RED LED
+    return -1;
+  }
+
+  /* Get Si7034 device ID */
+  si_buf[0] = 0xFC;
+  si_buf[1] = 0xC9;
+  if ((ret = HAL_I2C_Master_Transmit(&I2cxHandle, 2 * I2C_TEMP_ADDRESS, si_buf, 2, 100))) {
+    printf("Si7034: I2C HAL ERROR DEVICE ID: %d\r\n", ret);
+    write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x09, 0x0C); // RED LED
+    return -1;
+  }
+  HAL_I2C_Master_Receive(&I2cxHandle, 2 * I2C_TEMP_ADDRESS, si_buf, 6, 100);
+  if (si_buf[0] != 0x22) {
+    printf("Si7034: INVALID DEVICE ID: %d\r\n", si_buf[0]);
+    write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x09, 0x0C); // RED LED
+    return -1;
+  }
 
   /*##-3- Toggle PB12~15 IO in an infinite loop #################################*/
   while (1)
@@ -321,9 +347,11 @@ int main(void)
     HAL_Delay(LED_OFF_SLEEP_DELAY);
     write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x08, 0x00); // LED 11
 
+#if DEBUG
     if (HAL_I2C_GetError(&I2cyHandle) == HAL_I2C_ERROR_AF) {
-      printf("ERROR: LP3944 I2C WRITE FAILURE\r\n");
+      printf("ERROR: LP3944 I2C FAILURE\r\n");
     }
+#endif
 
     /* Read and report temperature and humidity data */
     int si_temp = 0, si_humidity = 0;
@@ -348,7 +376,7 @@ int main(void)
       humidity = 100;
     }
 
-    printf("Si7034: T %d H %d\r\n", temp, humidity);
+    printf("SHUB: T %d H %d\r\n", temp, humidity);
   }
 }
 
