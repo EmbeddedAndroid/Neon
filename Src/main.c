@@ -410,11 +410,11 @@ int main(void)
     humidity = ((si_humidity * 12500) >> 13) / 1000;
     if (humidity < 0) {
       humidity = 0;
-    } else if (humidity > 100) {
-      humidity = 100;
+    } else if (humidity >= 100) {
+      humidity = 99;
     }
 
-    printf("SHUB: T %d H %d\r\n", temp, humidity);
+    printf("SHUB: T % .3d H %.2d\r\n", temp, humidity);
   }
 }
 
