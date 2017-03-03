@@ -216,8 +216,17 @@ int main(void)
   GPIO_InitStruct.Pin = GPIO_PIN_15;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /* Host Status GPIO */
+  /* Configure PB9 pin as input floating */
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Pin = GPIO_PIN_9;
+  GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  /* TODO: Use EXTI for line down/up */
+
   /* Initial delay, on purpose  */
-  HAL_Delay(1000);
+  HAL_Delay(100);
 
 #if DEBUG
   printf("Hello world !\r\n");
@@ -261,9 +270,38 @@ int main(void)
     return -1;
   }
 
+  /* Disable everything else during init */
+  write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x06, 0x00);
+  write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x07, 0x00);
+  write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x08, 0x00);
+  write_I2C_register(&I2cyHandle, 2 * I2C_LED_ADDRESS, 0x09, 0x00);
+
+  /* Enable the GPIO LEDs, and run the LED effects after activated by the host board */
+  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
+  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15);
+  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_12);
+  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+
+  int pin_state = 0;
+
+  while (1) {
+    pin_state = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9);
+    if (pin_state)
+      break;
+  }
+
+  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
+  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15);
+  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_12);
+  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+
   /*##-3- Toggle PB12~15 IO in an infinite loop #################################*/
   while (1)
   {
+    pin_state = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9);
+    if (pin_state == 0)
+      NVIC_SystemReset();
+
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
     HAL_Delay(LED_SLEEP_DELAY);
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
